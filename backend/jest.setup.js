@@ -1,10 +1,16 @@
 // jest.setup.js
-const { sequelize } = require('./database');
+const { Sequelize } = require("sequelize");
 
-beforeAll(async () => {
-  await sequelize.sync({ force: true });
+// Mock Sequelize instance for tests
+jest.mock("sequelize", () => {
+  const mSequelize = {
+    authenticate: jest.fn(),
+    define: jest.fn(),
+    sync: jest.fn(),
+  };
+  const actualSequelize = jest.requireActual("sequelize");
+  return { Sequelize: jest.fn(() => mSequelize), DataTypes: actualSequelize.DataTypes };
 });
 
-afterAll(async () => {
-  await sequelize.close();
-});
+// No actual database setup needed here since we're mocking
+module.exports = { sequelize: new Sequelize("sqlite::memory:", { logging: false }) };
