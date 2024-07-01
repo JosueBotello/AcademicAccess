@@ -1,6 +1,6 @@
 require('dotenv').config(); // Load environment variables from .env file
 const { Sequelize } = require('sequelize');
-const config = require('./config/config')[process.env.NODE_ENV || 'development']; // Use environment-based config
+const config = require('./config/config')[process.env.NODE_ENV || 'development']; 
 
 // Initialize Sequelize with the database configuration
 const sequelize = new Sequelize(config.database, config.username, config.password, {
