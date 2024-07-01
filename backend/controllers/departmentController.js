@@ -1,107 +1,67 @@
-const { getAllDepartments, getDepartmentById, createDepartment, updateDepartment, deleteDepartment } = require('../../controllers/departmentController');
-const Department = require('../../models/department');
+const Department = require('../models/department');
 
-jest.mock('../../models/department');
+async function getAllDepartments(req, res) {
+  try {
+    const departments = await Department.findAll();
+    res.json(departments);
+  } catch (error) {
+    res.status(500).json({ error: 'Internal server error' });
+  }
+}
 
-describe('Department Controller Unit Tests', () => {
-  beforeEach(() => {
-    jest.clearAllMocks();
-  });
+async function getDepartmentById(req, res) {
+  try {
+    const department = await Department.findByPk(req.params.id);
+    if (department) {
+      res.json(department);
+    } else {
+      res.status(404).json({ error: 'Department not found' });
+    }
+  } catch (error) {
+    res.status(500).json({ error: 'Internal server error' });
+  }
+}
 
-  test('should fetch all departments', async () => {
-    const mockDepartments = [{ id: 1, name: 'Economics' }, { id: 2, name: 'Computer Science' }];
-    Department.findAll.mockResolvedValue(mockDepartments);
+async function createDepartment(req, res) {
+  try {
+    const newDepartment = await Department.create(req.body);
+    res.status(201).json(newDepartment);
+  } catch (error) {
+    res.status(500).json({ error: 'Internal server error' });
+  }
+}
 
-    const req = {};
-    const res = {
-      json: jest.fn()
-    };
+async function updateDepartment(req, res) {
+  try {
+    const [updatedRows] = await Department.update(req.body, { where: { id: req.params.id } });
+    if (updatedRows) {
+      const updatedDepartment = await Department.findByPk(req.params.id);
+      res.json(updatedDepartment);
+    } else {
+      res.status(404).json({ error: 'Department not found' });
+    }
+  } catch (error) {
+    res.status(500).json({ error: 'Internal server error' });
+  }
+}
 
-    await getAllDepartments(req, res);
+async function deleteDepartment(req, res) {
+  try {
+    const deletedRows = await Department.destroy({ where: { id: req.params.id } });
+    if (deletedRows) {
+      res.status(204).send();
+    } else {
+      res.status(404).json({ error: 'Department not found' });
+    }
+  } catch (error) {
+    res.status(500).json({ error: 'Internal server error' });
+  }
+}
 
-    expect(Department.findAll).toHaveBeenCalled();
-    expect(res.json).toHaveBeenCalledWith(mockDepartments);
-  });
-
-  test('should fetch department by ID', async () => {
-    const mockDepartment = { id: 1, name: 'Economics' };
-    Department.findByPk.mockResolvedValue(mockDepartment);
-
-    const req = { params: { id: 1 } };
-    const res = {
-      json: jest.fn(),
-      status: jest.fn().mockReturnThis()
-    };
-
-    await getDepartmentById(req, res);
-
-    expect(Department.findByPk).toHaveBeenCalledWith('1');
-    expect(res.json).toHaveBeenCalledWith(mockDepartment);
-  });
-
-  test('should return 404 if department not found', async () => {
-    Department.findByPk.mockResolvedValue(null);
-
-    const req = { params: { id: 999 } };
-    const res = {
-      json: jest.fn(),
-      status: jest.fn().mockReturnThis()
-    };
-
-    await getDepartmentById(req, res);
-
-    expect(Department.findByPk).toHaveBeenCalledWith('999');
-    expect(res.status).toHaveBeenCalledWith(404);
-    expect(res.json).toHaveBeenCalledWith({ error: 'Department not found' });
-  });
-
-  test('should create a new department', async () => {
-    const mockDepartment = { id: 1, name: 'New Department', description: 'Test description' };
-    Department.create.mockResolvedValue(mockDepartment);
-
-    const req = { body: { name: 'New Department', description: 'Test description' } };
-    const res = {
-      status: jest.fn().mockReturnThis(),
-      json: jest.fn()
-    };
-
-    await createDepartment(req, res);
-
-    expect(Department.create).toHaveBeenCalledWith(req.body);
-    expect(res.status).toHaveBeenCalledWith(201);
-    expect(res.json).toHaveBeenCalledWith(mockDepartment);
-  });
-
-  test('should update an existing department', async () => {
-    const updatedDepartment = { id: 1, name: 'Updated Department' };
-    Department.update.mockResolvedValue([1]);
-    Department.findByPk.mockResolvedValue(updatedDepartment);
-
-    const req = { params: { id: 1 }, body: { name: 'Updated Department' } };
-    const res = {
-      json: jest.fn()
-    };
-
-    await updateDepartment(req, res);
-
-    expect(Department.update).toHaveBeenCalledWith(req.body, { where: { id: '1' } });
-    expect(Department.findByPk).toHaveBeenCalledWith('1');
-    expect(res.json).toHaveBeenCalledWith(updatedDepartment);
-  });
-
-  test('should delete a department', async () => {
-    Department.destroy.mockResolvedValue(1);
-
-    const req = { params: { id: 1 } };
-    const res = {
-      status: jest.fn().mockReturnThis(),
-      send: jest.fn()
-    };
-
-    await deleteDepartment(req, res);
-
-    expect(Department.destroy).toHaveBeenCalledWith({ where: { id: '1' } });
-    expect(res.status).toHaveBeenCalledWith(204);
-    expect(res.send).toHaveBeenCalled();
-  });
-});
+module.exports = {
+  getAllDepartments,
+  getDepartmentById,
+  createDepartment,
+  updateDepartment,
+  deleteDepartment
+};
