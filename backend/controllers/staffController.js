@@ -1,4 +1,5 @@
-const { Staff, ContactInfo, Department } = require('../database');
+const { models, sequelize } = require('../database');
+const { Staff, ContactInfo, Department } = models;
 
 exports.getAllStaff = async (req, res) => {
   try {
@@ -11,6 +12,7 @@ exports.getAllStaff = async (req, res) => {
     res.status(500).json({ error: 'Internal server error' });
   }
 };
+
 
 exports.getStaffById = async (req, res) => {
   try {
@@ -29,22 +31,27 @@ exports.getStaffById = async (req, res) => {
 };
 
 exports.createStaff = async (req, res) => {
+  const transaction = await sequelize.transaction();
   try {
     const { contactInfo, ...staffData } = req.body;
-    const newContactInfo = await ContactInfo.create(contactInfo);
+    const newContactInfo = await ContactInfo.create(contactInfo, { transaction });
     const newStaff = await Staff.create({
       ...staffData,
       ContactInfoId: newContactInfo.id
-    });
+    }, { transaction });
     const createdStaff = await Staff.findByPk(newStaff.id, {
-      include: [ContactInfo, Department]
+      include: [ContactInfo, Department],
+      transaction
     });
+    await transaction.commit();
     res.status(201).json(createdStaff);
   } catch (error) {
+    await transaction.rollback();
     console.error('Error creating staff:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 };
+
 
 exports.updateStaff = async (req, res) => {
   try {

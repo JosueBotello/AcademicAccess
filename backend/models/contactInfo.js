@@ -20,5 +20,14 @@ module.exports = (sequelize, DataTypes) => {
     tableName: 'ContactInfo'
   });
 
+  ContactInfo.associate = (models) => {
+    ContactInfo.hasOne(models.Staff, {
+      foreignKey: 'ContactInfoId',
+      as: 'staff',
+      onDelete: 'SET NULL',
+      onUpdate: 'CASCADE'
+    });
+  };
+
   return ContactInfo;
 };

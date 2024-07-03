@@ -1,6 +1,6 @@
 require('dotenv').config(); // Load environment variables from .env file
 const { Sequelize } = require('sequelize');
-const config = require('./config/config')[process.env.NODE_ENV || 'development']; 
+const config = require('./config/config')[process.env.NODE_ENV || 'development'];
 
 // Initialize Sequelize with the database configuration
 const sequelize = new Sequelize(config.database, config.username, config.password, {
@@ -10,16 +10,24 @@ const sequelize = new Sequelize(config.database, config.username, config.passwor
 });
 
 // Import models
-const ContactInfo = require('./models/contactInfo')(sequelize, Sequelize);
-const Department = require('./models/department')(sequelize, Sequelize);
-const Staff = require('./models/staff')(sequelize, Sequelize);
+const modelDefiners = [
+  require('./models/contactInfo'),
+  require('./models/department'),
+  require('./models/staff'),
+];
 
-// Set up associations
-ContactInfo.hasMany(Staff, { onDelete: 'SET NULL', onUpdate: 'CASCADE' });
-Staff.belongsTo(ContactInfo, { onDelete: 'SET NULL', onUpdate: 'CASCADE' });
+// Define all models according to their files.
+const models = Object.fromEntries(
+  modelDefiners.map(definer => {
+    const model = definer(sequelize, Sequelize.DataTypes);
+    return model ? [model.name, model] : [];
+  }).filter(model => model.length > 0)
+);
 
-Department.hasMany(Staff, { onDelete: 'SET NULL', onUpdate: 'CASCADE' });
-Staff.belongsTo(Department, { onDelete: 'SET NULL', onUpdate: 'CASCADE' });
+// If a model has an associate function, call it to set the relationships
+Object.values(models)
+  .filter(model => typeof model.associate === 'function')
+  .forEach(model => model.associate(models));
 
 // Test database connection
 const testConnection = async () => {
@@ -41,4 +49,4 @@ const syncDatabase = async () => {
   }
 };
 
-module.exports = { sequelize, testConnection, syncDatabase, models: { ContactInfo, Department, Staff } };
+module.exports = { sequelize, testConnection, syncDatabase, models };

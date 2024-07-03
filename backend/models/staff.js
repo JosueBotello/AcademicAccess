@@ -26,5 +26,20 @@ module.exports = (sequelize, DataTypes) => {
     tableName: 'Staff'
   });
 
+  Staff.associate = (models) => {
+    Staff.belongsTo(models.ContactInfo, {
+      foreignKey: 'ContactInfoId',
+      as: 'contactInfo',
+      onDelete: 'SET NULL',
+      onUpdate: 'CASCADE'
+    });
+    Staff.belongsTo(models.Department, {
+      foreignKey: 'DepartmentId',
+      as: 'department',
+      onDelete: 'SET NULL',
+      onUpdate: 'CASCADE'
+    });
+  };
+
   return Staff;
 };

@@ -4,8 +4,9 @@
   "description": "Online University Staff Directory with ChatBot",
   "main": "server.js",
   "scripts": {
-    "start": "NODE_ENV=development node server.js",
+    "start": "NODE_ENV=development node backend/server.js",
     "test": "NODE_ENV=test jest",
+    "test:unit": "NODE_ENV=test jest backend/__tests__/unit",
     "test:watch": "NODE_ENV=test jest --watch",
     "start:prod": "NODE_ENV=production node server.js"
   },
@@ -16,23 +17,7 @@
     "express": "^4.17.1",
     "pg": "^8.7.1",
     "sequelize": "^6.37.3",
-    "sequelize-cli": "^6.6.2",
-    "@emotion/react": "^11.x.x",
-    "@emotion/styled": "^11.x.x",
-    "@mui/material": "^5.x.x",
-    "@testing-library/jest-dom": "^5.x.x",
-    "@testing-library/react": "^13.x.x",
-    "@testing-library/user-event": "^13.x.x",
-    "@types/jest": "^27.x.x",
-    "@types/node": "^16.x.x",
-    "@types/react": "^18.x.x",
-    "@types/react-dom": "^18.x.x",
-    "react": "^18.x.x",
-    "react-dom": "^18.x.x",
-    "react-router-dom": "^6.x.x",
-    "react-scripts": "5.x.x",
-    "typescript": "^4.x.x",
-    "web-vitals": "^2.x.x"
+    "sequelize-cli": "^6.6.2"
   },
   "devDependencies": {
     "autocannon": "^7.15.0",
@@ -47,6 +32,10 @@
     ],
     "setupFilesAfterEnv": [
       "<rootDir>/backend/jest.setup.js"
+    ],
+    "moduleDirectories": [
+      "node_modules",
+      "backend"
     ]
   }
 }

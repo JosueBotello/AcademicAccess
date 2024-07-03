@@ -18,5 +18,14 @@ module.exports = (sequelize, DataTypes) => {
     },
   });
 
+  Department.associate = (models) => {
+    Department.hasMany(models.Staff, {
+      foreignKey: 'DepartmentId',
+      as: 'staff',
+      onDelete: 'SET NULL',
+      onUpdate: 'CASCADE'
+    });
+  };
+
   return Department;
 };
