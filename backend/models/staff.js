@@ -1,10 +1,20 @@
-module.exports = (sequelize, DataTypes) => {
-  const Staff = sequelize.define('Staff', {
-    id: {
-      type: DataTypes.INTEGER,
-      primaryKey: true,
-      autoIncrement: true,
-    },
+import { Model, DataTypes } from 'sequelize';
+
+export default (sequelize) => {
+  class Staff extends Model {
+    static associate(models) {
+      Staff.belongsTo(models.ContactInfo, {
+        foreignKey: 'ContactInfoId',
+        as: 'contactInfo',
+      });
+      Staff.belongsTo(models.Department, {
+        foreignKey: 'DepartmentId',
+        as: 'department',
+      });
+    }
+  }
+
+  Staff.init({
     firstName: {
       type: DataTypes.STRING,
       allowNull: false,
@@ -13,33 +23,13 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.STRING,
       allowNull: false,
     },
-    position: {
-      type: DataTypes.STRING,
-    },
-    bio: {
-      type: DataTypes.TEXT,
-    },
-    profilePicture: {
-      type: DataTypes.STRING,
-    },
+    position: DataTypes.STRING,
+    bio: DataTypes.TEXT,
+    profilePicture: DataTypes.STRING,
   }, {
-    tableName: 'Staff'
+    sequelize,
+    modelName: 'Staff',
   });
-
-  Staff.associate = (models) => {
-    Staff.belongsTo(models.ContactInfo, {
-      foreignKey: 'ContactInfoId',
-      as: 'contactInfo',
-      onDelete: 'SET NULL',
-      onUpdate: 'CASCADE'
-    });
-    Staff.belongsTo(models.Department, {
-      foreignKey: 'DepartmentId',
-      as: 'department',
-      onDelete: 'SET NULL',
-      onUpdate: 'CASCADE'
-    });
-  };
 
   return Staff;
 };

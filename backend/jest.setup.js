@@ -47,6 +47,7 @@ const mockModels = {
 jest.mock('./database', () => ({
   sequelize: new (jest.requireMock('sequelize').Sequelize)(),
   models: mockModels,
+  syncDatabase: jest.fn().mockResolvedValue(),
 }), { virtual: true });
 
 beforeAll(async () => {

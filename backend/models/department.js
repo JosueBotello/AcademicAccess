@@ -1,31 +1,27 @@
-module.exports = (sequelize, DataTypes) => {
-  const Department = sequelize.define('Department', {
-    id: {
-      type: DataTypes.INTEGER,
-      primaryKey: true,
-      autoIncrement: true,
-    },
+import { Model, DataTypes } from 'sequelize';
+
+export default (sequelize) => {
+  class Department extends Model {
+    static associate(models) {
+      Department.hasMany(models.Staff, {
+        foreignKey: 'DepartmentId',
+        as: 'staff',
+      });
+    }
+  }
+
+  Department.init({
     name: {
       type: DataTypes.STRING,
       allowNull: false,
       unique: true,
     },
-    description: {
-      type: DataTypes.TEXT,
-    },
-    headOfDepartment: {
-      type: DataTypes.STRING,
-    },
+    description: DataTypes.TEXT,
+    headOfDepartment: DataTypes.STRING,
+  }, {
+    sequelize,
+    modelName: 'Department',
   });
-
-  Department.associate = (models) => {
-    Department.hasMany(models.Staff, {
-      foreignKey: 'DepartmentId',
-      as: 'staff',
-      onDelete: 'SET NULL',
-      onUpdate: 'CASCADE'
-    });
-  };
 
   return Department;
 };

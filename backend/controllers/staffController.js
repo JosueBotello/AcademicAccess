@@ -1,7 +1,7 @@
 const { models, sequelize } = require('../database');
 const { Staff, ContactInfo, Department } = models;
 
-exports.getAllStaff = async (req, res) => {
+const getAllStaff = async (req, res) => {
   try {
     const staff = await Staff.findAll({
       include: [ContactInfo, Department]
@@ -13,8 +13,7 @@ exports.getAllStaff = async (req, res) => {
   }
 };
 
-
-exports.getStaffById = async (req, res) => {
+const getStaffById = async (req, res) => {
   try {
     const staff = await Staff.findByPk(req.params.id, {
       include: [ContactInfo, Department]
@@ -25,14 +24,15 @@ exports.getStaffById = async (req, res) => {
       res.status(404).json({ error: 'Staff member not found' });
     }
   } catch (error) {
-    console.error('Error fetching staff by ID:', error);
+    console.error('Error fetching staff by id:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 };
 
-exports.createStaff = async (req, res) => {
-  const transaction = await sequelize.transaction();
+const createStaff = async (req, res) => {
+  let transaction;
   try {
+    transaction = await sequelize.transaction();
     const { contactInfo, ...staffData } = req.body;
     const newContactInfo = await ContactInfo.create(contactInfo, { transaction });
     const newStaff = await Staff.create({
@@ -46,47 +46,69 @@ exports.createStaff = async (req, res) => {
     await transaction.commit();
     res.status(201).json(createdStaff);
   } catch (error) {
-    await transaction.rollback();
+    if (transaction) await transaction.rollback();
     console.error('Error creating staff:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 };
 
-
-exports.updateStaff = async (req, res) => {
+const updateStaff = async (req, res) => {
+  let transaction;
   try {
+    transaction = await sequelize.transaction();
     const { contactInfo, ...staffData } = req.body;
-    const staff = await Staff.findByPk(req.params.id);
-    if (staff) {
-      await staff.update(staffData);
+    const [updatedRows] = await Staff.update(staffData, {
+      where: { id: req.params.id },
+      transaction
+    });
+    if (updatedRows) {
       if (contactInfo) {
-        await ContactInfo.update(contactInfo, { where: { id: staff.ContactInfoId } });
+        await ContactInfo.update(contactInfo, {
+          where: { id: staffData.ContactInfoId },
+          transaction
+        });
       }
       const updatedStaff = await Staff.findByPk(req.params.id, {
-        include: [ContactInfo, Department]
+        include: [ContactInfo, Department],
+        transaction
       });
+      await transaction.commit();
       res.json(updatedStaff);
     } else {
+      await transaction.rollback();
       res.status(404).json({ error: 'Staff member not found' });
     }
   } catch (error) {
+    if (transaction) await transaction.rollback();
     console.error('Error updating staff:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 };
 
-exports.deleteStaff = async (req, res) => {
+const deleteStaff = async (req, res) => {
+  let transaction;
   try {
-    const staff = await Staff.findByPk(req.params.id);
+    transaction = await sequelize.transaction();
+    const staff = await Staff.findByPk(req.params.id, { transaction });
     if (staff) {
-      await ContactInfo.destroy({ where: { id: staff.ContactInfoId } });
-      await staff.destroy();
+      await staff.destroy({ transaction });
+      await transaction.commit();
       res.status(204).send();
     } else {
+      await transaction.rollback();
       res.status(404).json({ error: 'Staff member not found' });
     }
   } catch (error) {
+    if (transaction) await transaction.rollback();
     console.error('Error deleting staff:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
+};
+
+module.exports = {
+  getAllStaff,
+  getStaffById,
+  createStaff,
+  updateStaff,
+  deleteStaff
 };
