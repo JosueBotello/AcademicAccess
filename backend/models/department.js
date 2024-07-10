@@ -1,27 +1,28 @@
-import { Model, DataTypes } from 'sequelize';
+const { Model, DataTypes } = require('sequelize');
 
-export default (sequelize) => {
-  class Department extends Model {
-    static associate(models) {
-      Department.hasMany(models.Staff, {
-        foreignKey: 'DepartmentId',
-        as: 'staff',
-      });
-    }
-  }
-
+module.exports = (sequelize) => {
+  class Department extends Model {}
   Department.init({
     name: {
       type: DataTypes.STRING,
-      allowNull: false,
-      unique: true,
+      allowNull: false
     },
-    description: DataTypes.TEXT,
-    headOfDepartment: DataTypes.STRING,
+    description: {
+      type: DataTypes.TEXT,
+      allowNull: true
+    },
+    headOfDepartment: {
+      type: DataTypes.STRING,
+      allowNull: true
+    }
   }, {
     sequelize,
     modelName: 'Department',
   });
+
+  Department.associate = (models) => {
+    Department.hasMany(models.Staff, { foreignKey: 'departmentId', as: 'staffMembers' });
+  };
 
   return Department;
 };

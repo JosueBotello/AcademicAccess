@@ -1,8 +1,8 @@
-import { Sequelize } from 'sequelize';
-import config from '../../config/config.js';
-import StaffModel from '../../models/staff.js';
-import DepartmentModel from '../../models/department.js';
-import ContactInfoModel from '../../models/contactInfo.js';
+const { Sequelize } = require('sequelize');
+const config = require('../../config/config');
+const StaffModel = require('../../models/staff');
+const DepartmentModel = require('../../models/department');
+const ContactInfoModel = require('../../models/contactInfo');
 
 let sequelize;
 let Staff;
@@ -11,15 +11,16 @@ let ContactInfo;
 
 beforeAll(async () => {
   console.log('Test configuration:', config.test);
-  
+
   try {
     sequelize = new Sequelize(config.test.database, config.test.username, config.test.password, {
       host: config.test.host,
       dialect: config.test.dialect,
-      logging: false
+      logging: false,
     });
 
     console.log('Sequelize instance created');
+    console.log('Full Sequelize config:', sequelize.config);
 
     await sequelize.authenticate();
     console.log('Database connection has been established successfully.');
@@ -30,13 +31,10 @@ beforeAll(async () => {
 
     console.log('Models initialized');
 
-    // Associate models
-    const models = { Staff, Department, ContactInfo };
-    Object.values(models).forEach(model => {
-      if (typeof model.associate === 'function') {
-        model.associate(models);
-      }
-    });
+    // Explicitly call associate methods
+    Staff.associate({ Department, ContactInfo });
+    Department.associate({ Staff });
+    ContactInfo.associate({ Staff });
 
     console.log('Model associations established');
 
@@ -56,55 +54,55 @@ afterAll(async () => {
 });
 
 describe('Database Schema Tests', () => {
-  test('Staff table should have correct columns', async () => {
+  test('Staff table should have correct columns', () => {
     expect(Staff).toBeDefined();
     const staffColumns = Object.keys(Staff.rawAttributes);
     expect(staffColumns).toEqual(expect.arrayContaining([
       'id', 'firstName', 'lastName', 'position', 'bio', 'profilePicture', 
-      'ContactInfoId', 'DepartmentId'
+      'departmentId', 'contactInfoId', 'createdAt', 'updatedAt'
     ]));
   });
 
-  test('Department table should have correct columns', async () => {
+  test('Department table should have correct columns', () => {
     expect(Department).toBeDefined();
     const departmentColumns = Object.keys(Department.rawAttributes);
     expect(departmentColumns).toEqual(expect.arrayContaining([
-      'id', 'name', 'description', 'headOfDepartment'
+      'id', 'name', 'description', 'headOfDepartment', 'createdAt', 'updatedAt'
     ]));
   });
 
-  test('ContactInfo table should have correct columns', async () => {
+  test('ContactInfo table should have correct columns', () => {
     expect(ContactInfo).toBeDefined();
     const contactInfoColumns = Object.keys(ContactInfo.rawAttributes);
     expect(contactInfoColumns).toEqual(expect.arrayContaining([
-      'id', 'email', 'phone', 'office'
+      'id', 'email', 'phone', 'office', 'createdAt', 'updatedAt'
     ]));
   });
 
   test('Staff should have a relation to Department', () => {
     expect(Staff.associations).toBeDefined();
-    const departmentAssociation = Staff.associations.Department;
+    const departmentAssociation = Staff.associations.department;
     expect(departmentAssociation).toBeDefined();
     expect(departmentAssociation.associationType).toBe('BelongsTo');
   });
 
   test('Staff should have a relation to ContactInfo', () => {
     expect(Staff.associations).toBeDefined();
-    const contactInfoAssociation = Staff.associations.ContactInfo;
+    const contactInfoAssociation = Staff.associations.contactInfo;
     expect(contactInfoAssociation).toBeDefined();
     expect(contactInfoAssociation.associationType).toBe('BelongsTo');
   });
 
   test('Department should have many Staff', () => {
     expect(Department.associations).toBeDefined();
-    const staffAssociation = Department.associations.Staff;
+    const staffAssociation = Department.associations.staffMembers;
     expect(staffAssociation).toBeDefined();
     expect(staffAssociation.associationType).toBe('HasMany');
   });
 
   test('ContactInfo should have one Staff', () => {
     expect(ContactInfo.associations).toBeDefined();
-    const staffAssociation = ContactInfo.associations.Staff;
+    const staffAssociation = ContactInfo.associations.staff;
     expect(staffAssociation).toBeDefined();
     expect(staffAssociation.associationType).toBe('HasOne');
   });

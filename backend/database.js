@@ -1,12 +1,20 @@
-require('dotenv').config(); // Load environment variables from .env file
+require('dotenv').config();
 const { Sequelize } = require('sequelize');
 const config = require('./config/config')[process.env.NODE_ENV || 'development'];
+
+console.log('Current environment:', process.env.NODE_ENV);
+console.log('Database configuration:', config);
+
+// Check if config is correctly loaded
+if (!config || !config.database) {
+  throw new Error('Database configuration is undefined. Check the config file and environment variables.');
+}
 
 // Initialize Sequelize with the database configuration
 const sequelize = new Sequelize(config.database, config.username, config.password, {
   host: config.host,
-  dialect: 'postgres',
-  logging: false, // Set to console.log to see the SQL queries
+  dialect: config.dialect,
+  logging: false,
 });
 
 // Import models
@@ -17,17 +25,20 @@ const modelDefiners = [
 ];
 
 // Define all models according to their files.
-const models = Object.fromEntries(
-  modelDefiners.map(definer => {
-    const model = definer(sequelize, Sequelize.DataTypes);
-    return model ? [model.name, model] : [];
-  }).filter(model => model.length > 0)
-);
+const models = {};
+modelDefiners.forEach(definer => {
+  const model = definer(sequelize, Sequelize.DataTypes);
+  console.log(`Defining model: ${model.name}`);
+  models[model.name] = model;
+});
 
 // If a model has an associate function, call it to set the relationships
 Object.values(models)
   .filter(model => typeof model.associate === 'function')
-  .forEach(model => model.associate(models));
+  .forEach(model => {
+    console.log(`Associating model: ${model.name}`);
+    model.associate(models);
+  });
 
 // Test database connection
 const testConnection = async () => {

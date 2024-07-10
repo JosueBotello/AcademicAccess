@@ -1,27 +1,19 @@
-import { Model, DataTypes } from 'sequelize';
+const { Model, DataTypes } = require('sequelize');
 
-export default (sequelize) => {
-  class ContactInfo extends Model {
-    static associate(models) {
-      ContactInfo.hasOne(models.Staff, {
-        foreignKey: 'ContactInfoId',
-        as: 'staff',
-      });
-    }
-  }
-
+module.exports = (sequelize) => {
+  class ContactInfo extends Model {}
   ContactInfo.init({
-    email: {
-      type: DataTypes.STRING,
-      allowNull: false,
-      unique: true,
-    },
+    email: DataTypes.STRING,
     phone: DataTypes.STRING,
     office: DataTypes.STRING,
   }, {
     sequelize,
     modelName: 'ContactInfo',
   });
+
+  ContactInfo.associate = (models) => {
+    ContactInfo.hasOne(models.Staff, { as: 'staff' });
+  };
 
   return ContactInfo;
 };

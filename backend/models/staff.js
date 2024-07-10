@@ -1,35 +1,37 @@
-import { Model, DataTypes } from 'sequelize';
+const { Model, DataTypes } = require('sequelize');
 
-export default (sequelize) => {
-  class Staff extends Model {
-    static associate(models) {
-      Staff.belongsTo(models.ContactInfo, {
-        foreignKey: 'ContactInfoId',
-        as: 'contactInfo',
-      });
-      Staff.belongsTo(models.Department, {
-        foreignKey: 'DepartmentId',
-        as: 'department',
-      });
-    }
-  }
-
+module.exports = (sequelize) => {
+  class Staff extends Model {}
   Staff.init({
     firstName: {
       type: DataTypes.STRING,
-      allowNull: false,
+      allowNull: false
     },
     lastName: {
       type: DataTypes.STRING,
-      allowNull: false,
+      allowNull: false
     },
-    position: DataTypes.STRING,
-    bio: DataTypes.TEXT,
-    profilePicture: DataTypes.STRING,
+    position: {
+      type: DataTypes.STRING,
+      allowNull: false
+    },
+    bio: {
+      type: DataTypes.TEXT,
+      allowNull: true
+    },
+    profilePicture: {
+      type: DataTypes.STRING,
+      allowNull: true
+    }
   }, {
     sequelize,
     modelName: 'Staff',
   });
+
+  Staff.associate = (models) => {
+    Staff.belongsTo(models.Department, { foreignKey: 'departmentId', as: 'department' });
+    Staff.belongsTo(models.ContactInfo, { foreignKey: 'contactInfoId', as: 'contactInfo' });
+  };
 
   return Staff;
 };

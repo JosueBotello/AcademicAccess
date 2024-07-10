@@ -1,5 +1,5 @@
 const request = require('supertest');
-const app = require('../../server');
+const { app } = require('../../server');
 const { models } = require('../../database');
 
 jest.mock('../../database', () => ({
@@ -83,5 +83,25 @@ describe('Department Routes Integration Tests', () => {
     const response = await request(app).delete('/departments/1');
 
     expect(response.status).toBe(204);
+  });
+
+  test('PUT /departments/:id should return 404 for non-existent department', async () => {
+    models.Department.update.mockResolvedValue([0]);
+
+    const response = await request(app)
+      .put('/departments/999')
+      .send({ name: 'Updated Department' });
+
+    expect(response.status).toBe(404);
+    expect(response.body).toEqual({ error: 'Department not found' });
+  });
+
+  test('DELETE /departments/:id should return 404 for non-existent department', async () => {
+    models.Department.destroy.mockResolvedValue(0);
+
+    const response = await request(app).delete('/departments/999');
+
+    expect(response.status).toBe(404);
+    expect(response.body).toEqual({ error: 'Department not found' });
   });
 });

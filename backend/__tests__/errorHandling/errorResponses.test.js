@@ -1,4 +1,6 @@
 const request = require('supertest');
+const { app } = require('../../server');
+const staffController = require('../../controllers/staffController');
 
 // Mock the entire staffController
 jest.mock('../../controllers/staffController', () => ({
@@ -30,11 +32,6 @@ jest.mock('../../database', () => ({
   },
   syncDatabase: jest.fn().mockResolvedValue(),
 }));
-
-const app = require('../../server');
-const staffController = require('../../controllers/staffController');
-
-jest.setTimeout(10000); // Increase timeout to 10 seconds
 
 describe('Error Handling Tests', () => {
   test('should return 404 for non-existent route', async () => {

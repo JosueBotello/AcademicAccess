@@ -1,34 +1,55 @@
-const autocannon = require('autocannon');
-const { promisify } = require('util');
-const app = require('../../server');
-
-const autocannonAsync = promisify(autocannon);
+const supertest = require('supertest');
+const { sequelize, syncDatabase, models } = require('../../database');
+const { app, startServer } = require('../../server');
 
 let server;
 
-beforeAll((done) => {
-  server = app.listen(0, () => {
-    console.log(`Test server running on port ${server.address().port}`);
-    done();
-  });
+beforeAll(async () => {
+  await syncDatabase();
+  server = await startServer();
+  console.log(`Test server running on port ${server.address().port}`);
 });
 
-afterAll((done) => {
-  server.close(done);
+afterAll(async () => {
+  await new Promise(resolve => server.close(resolve));
+  await sequelize.close();
 });
 
 describe('API Performance Tests', () => {
-  test('should handle load', async () => {
-    const result = await autocannonAsync({
-      url: `http://localhost:${server.address().port}/staff`,
-      connections: 10,
-      duration: 5
+  it('should handle load', async () => {
+    // Create test data directly in the test
+    const department = await models.Department.create({
+      name: 'Test Department',
+      description: 'A department for testing'
     });
 
-    console.log(result);
-    expect(result.errors).toBe(0);
-    expect(result.timeouts).toBe(0);
-    expect(result['2xx']).toBeGreaterThan(0);
-    expect(result.non2xx).toBe(0);
+    const contactInfo = await models.ContactInfo.create({
+      email: 'test@example.com',
+      phone: '123-456-7890',
+      office: 'Test Office'
+    });
+
+    await models.Staff.create({
+      firstName: 'Test',
+      lastName: 'User',
+      position: 'Tester',
+      bio: 'A test user for performance testing',
+      DepartmentId: department.id,
+      ContactInfoId: contactInfo.id
+    });
+
+    // Perform the API request
+    const result = await supertest(app)
+      .get('/staff')
+      .expect(200);
+
+    expect(result.status).toBe(200);
+    expect(Array.isArray(result.body)).toBe(true);
+    expect(result.body.length).toBeGreaterThan(0);
+
+    // Optional: Clean up test data
+    await models.Staff.destroy({ where: {} });
+    await models.ContactInfo.destroy({ where: {} });
+    await models.Department.destroy({ where: {} });
   }, 30000);
 });

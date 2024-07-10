@@ -1,50 +1,43 @@
-// server.js
-require('dotenv').config();
 const express = require('express');
-const cors = require('cors');
-const { syncDatabase } = require('./database');
-const staffRoutes = require('./routes/staffRoutes');
-const departmentRoutes = require('./routes/departmentRoutes');
+const { sequelize, testConnection, syncDatabase } = require('./database');
 
 const app = express();
 const port = process.env.PORT || 3000;
 
-app.use(cors());
 app.use(express.json());
 
-app.use('/staff', staffRoutes);
-app.use('/departments', departmentRoutes);
+// Define your routes here
+app.use('/staff', require('./routes/staffRoutes'));
+app.use('/departments', require('./routes/departmentRoutes'));
 
-app.get('/', (req, res) => {
-  res.json({ message: 'Welcome to AcademicAccess API' });
-});
-
-// Handle 404 errors
+// 404 Error Handler
 app.use((req, res, next) => {
   res.status(404).json({ error: 'Not Found' });
 });
 
-// Global error handler
+// General Error Handler
 app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(500).json({ error: 'Internal server error' });
 });
 
-// Export the app before syncing the database
-module.exports = app;
+// Test the database connection and sync models
+const setupDatabase = async () => {
+  try {
+    await testConnection();
+    await syncDatabase();
+  } catch (error) {
+    console.error('Database setup failed:', error);
+    process.exit(1);
+  }
+};
 
-// Only sync and start the server if this file is run directly
-if (require.main === module) {
-  syncDatabase()
-    .then(() => {
-      const server = app.listen(port, () => {
-        console.log(`Server running in ${process.env.NODE_ENV} mode on port ${port}`);
-      });
-      return server;
-    })
-    .catch(err => {
-      console.error('Unable to sync database:', err);
-    });
-}
+// Start the server
+const startServer = async () => {
+  await setupDatabase();
+  return app.listen(port, () => {
+    console.log(`Server is running on port ${port}`);
+  });
+};
 
-module.exports = app;
+module.exports = { app, startServer };

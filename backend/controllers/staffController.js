@@ -4,7 +4,10 @@ const { Staff, ContactInfo, Department } = models;
 const getAllStaff = async (req, res) => {
   try {
     const staff = await Staff.findAll({
-      include: [ContactInfo, Department]
+      include: [
+        { model: ContactInfo, as: 'contactInfo' }, // Use the correct alias
+        { model: Department, as: 'department' } // Use the correct alias
+      ]
     });
     res.json(staff);
   } catch (error) {
@@ -16,7 +19,10 @@ const getAllStaff = async (req, res) => {
 const getStaffById = async (req, res) => {
   try {
     const staff = await Staff.findByPk(req.params.id, {
-      include: [ContactInfo, Department]
+      include: [
+        { model: ContactInfo, as: 'contactInfo' }, // Use the correct alias
+        { model: Department, as: 'department' } // Use the correct alias
+      ]
     });
     if (staff) {
       res.json(staff);
