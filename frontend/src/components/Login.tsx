@@ -20,8 +20,10 @@ const Login: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
+      console.log('Attempting login with:', { username, password });
       // Attempt to log in
       const response = await login(username, password);
+      console.log('Login response:', response);
       
       // Update user context
       setUser({ token: response.token, role: response.role });
