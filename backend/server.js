@@ -1,14 +1,21 @@
 const express = require('express');
+const cors = require('cors');
 const { sequelize, testConnection, syncDatabase } = require('./database');
+const authRoutes = require('./routes/authRoutes');
+const staffRoutes = require('./routes/staffRoutes');
+const departmentRoutes = require('./routes/departmentRoutes');
 
 const app = express();
 const port = process.env.PORT || 3000;
 
-app.use(express.json());
+// Middleware
+app.use(cors()); // Enable CORS for all routes
+app.use(express.json()); // Parse JSON bodies
 
-// Define your routes here
-app.use('/staff', require('./routes/staffRoutes'));
-app.use('/departments', require('./routes/departmentRoutes'));
+// Routes
+app.use('/auth', authRoutes);
+app.use('/staff', staffRoutes);
+app.use('/departments', departmentRoutes);
 
 // 404 Error Handler
 app.use((req, res, next) => {
@@ -26,6 +33,7 @@ const setupDatabase = async () => {
   try {
     await testConnection();
     await syncDatabase();
+    console.log('Database setup completed successfully');
   } catch (error) {
     console.error('Database setup failed:', error);
     process.exit(1);
