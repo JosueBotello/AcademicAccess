@@ -1,16 +1,19 @@
 import React from 'react';
-import { AppBar, Toolbar, Typography, Button } from '@mui/material';
+import { AppBar, Toolbar, Button, Box } from '@mui/material';
 import { Link } from 'react-router-dom';
 
 const Header: React.FC = () => {
   return (
-    <AppBar position="static">
+    <AppBar position="static" color="transparent" elevation={0}>
       <Toolbar>
-        <Typography variant="h6" style={{ flexGrow: 1 }}>
-          AcademicAccess
-        </Typography>
-        <Button color="inherit" component={Link} to="/">Home</Button>
-        <Button color="inherit" component={Link} to="/staff">Staff Directory</Button>
+        {/* This Box component pushes the buttons to the right */}
+        <Box sx={{ flexGrow: 1 }} />
+        <Button component={Link} to="/login" variant="contained" color="primary" sx={{ mr: 2 }}>
+          Login
+        </Button>
+        <Button component={Link} to="/register" variant="outlined" color="primary">
+          Register
+        </Button>
       </Toolbar>
     </AppBar>
   );
