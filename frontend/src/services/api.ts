@@ -31,8 +31,8 @@ const api = axios.create({
 // Authentication functions
 export const login = async (username: string, password: string): Promise<LoginResponse> => {
   try {
-    const response = await api.post<ApiResponse<LoginResponse>>('/auth/login', { username, password });
-    return response.data.data;
+    const response = await api.post<LoginResponse>('/auth/login', { username, password });
+    return response.data;
   } catch (error) {
     if (axios.isAxiosError(error)) {
       const axiosError = error as AxiosError<ApiResponse>;
