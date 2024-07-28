@@ -26,12 +26,12 @@ const AdminProfileForm: React.FC<AdminProfileFormProps> = ({ onSubmit, initialDa
 
   const handleCoursesChange = (event: SelectChangeEvent<string[]>) => {
     setProfile(prev => ({ ...prev, courses: event.target.value as string[] }));
-    console.log('Courses updated:', event.target.value); // Debug log
+    console.log('Courses updated:', event.target.value); // This is a Debug log
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Form submitted with data:', profile); // Debug log
+    console.log('Form submitted with data:', profile); // This is a Debug log
     onSubmit(profile);
   };
 
