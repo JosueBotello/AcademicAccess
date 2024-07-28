@@ -4,6 +4,7 @@ const { sequelize, testConnection, syncDatabase } = require('./database');
 const authRoutes = require('./routes/authRoutes');
 const staffRoutes = require('./routes/staffRoutes');
 const departmentRoutes = require('./routes/departmentRoutes');
+const profileRoutes = require('./routes/profileRoutes');
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -16,6 +17,7 @@ app.use(express.json()); // Parse JSON bodies
 app.use('/auth', authRoutes);
 app.use('/staff', staffRoutes);
 app.use('/departments', departmentRoutes);
+app.use('/profiles', profileRoutes); // Add the new profile routes
 
 // 404 Error Handler
 app.use((req, res, next) => {
@@ -48,6 +50,6 @@ const startServer = async () => {
   });
 };
 
-startServer()
+startServer();
 
 module.exports = { app, startServer };
